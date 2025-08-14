@@ -1,131 +1,91 @@
-# Student Instructions: Assignment Submission via GitHub
+# Assignment 1: Basic Input/Output Operations
 
-## Quick Start Guide
+## Objective
+Write a C program that reads two integers and performs basic arithmetic operations.
 
-### Step 1: Accept the Assignment
+## Problem Description
+Your program should:
+1. Read two integers from standard input
+2. Calculate and output their sum, difference, and product
+3. Handle the operations correctly for all integer inputs
 
-1. Click the assignment link provided by your professor
-2. Sign in to GitHub (create account if needed)
-3. Click "Accept this assignment"
-4. Wait for your repository to be created
+## Requirements
+- Use standard C (C99 or later)
+- Read input using `scanf()`
+- Output results using `printf()`
+- Handle both positive and negative integers
+- Follow good programming practices
 
-### Step 2: Edit Your Solution
+## Input Format
+Two integers separated by whitespace on a single line.
 
-1. Click on the `student_solution.c` file in your repository
-2. Click the pencil icon (✏️) to edit
-3. Write your C code to solve the assignment
-4. Scroll down to "Commit changes"
-5. Add a message like "Submit assignment attempt 1"
-6. Click "Commit changes"
+## Output Format
+Three lines containing:
+1. The sum of the two integers
+2. The difference (first integer minus second integer)
+3. The product of the two integers
 
-### Step 3: Check Your Grade
+## Examples
 
-1. Click the "Actions" tab in your repository
-2. Wait 2-3 minutes for the autograder to finish
-3. Click on the latest workflow run to see detailed results
-4. Your grade will be displayed at the bottom
-
-### Step 4: Improve and Resubmit (Optional)
-
-1. If your grade isn't perfect, go back to step 2
-2. Edit your code to fix any issues
-3. Commit again with a new message like "Fix test case 2"
-4. Check your new grade in Actions tab
-
-## Understanding Your Results
-
-### ✅ What Success Looks Like:
-
+### Example 1
+**Input:**
 ```
-=== FINAL RESULTS ===
-Compilation:      15/15 points
-Test Cases:       80/80 points  
-Code Quality:      5/5 points
-FINAL SCORE:     100/100 points
-PERCENTAGE:           100%
-Letter Grade: A
+5 3
+```
+**Output:**
+```
+8
+2
+15
 ```
 
-### ❌ What Failure Looks Like:
-
+### Example 2
+**Input:**
 ```
-=== FINAL RESULTS ===
-Compilation:      15/15 points
-Test Cases:       40/80 points  (2/4 tests passed)
-Code Quality:      5/5 points
-FINAL SCORE:      60/100 points
-PERCENTAGE:            60%
-Letter Grade: D
+-10 7
 ```
-
-### 🔍 How to Debug Issues:
-
-**Compilation Failed:**
-
-- Check for missing semicolons
-- Make sure you have `#include <stdio.h>`
-- Verify all brackets `{}` are matched
-
-**Test Case Failed:**
-
-- Check the expected output format exactly
-- Make sure you're reading input correctly with `scanf`
-- Verify your calculations are correct
-
-**Timeout/Crash:**
-
-- Avoid infinite loops
-- Initialize all variables
-- Check for division by zero
-
-## Sample Working Solution
-
-```c
-#include <stdio.h>
-
-int main() {
-    int a, b;
-    
-    // Read two integers
-    scanf("%d %d", &a, &b);
-    
-    // Calculate and output results
-    printf("%d\n", a + b);      // sum
-    printf("%d\n", a - b);      // difference  
-    printf("%d\n", a * b);      // product
-    
-    return 0;
-}
+**Output:**
+```
+-3
+-17
+-70
 ```
 
-## Submission Tips
+### Example 3
+**Input:**
+```
+0 100
+```
+**Output:**
+```
+100
+-100
+0
+```
 
-### ✅ DO:
+## Submission Instructions
+1. Edit the file `student_solution.c` with your implementation
+2. Test your code locally if possible
+3. Commit and push your changes to submit
+4. Check the "Actions" tab to see your autograder results
+5. You can submit multiple times before the deadline
 
-- Start early and submit multiple times
-- Test with the provided examples
-- Read error messages carefully
-- Ask for help during office hours
-
-### ❌ DON'T:
-
-- Wait until the last minute
-- Share your code with other students
-- Copy solutions from the internet
-- Submit without testing
+## Grading Breakdown
+- **Compilation (15 points)**: Your code must compile without errors
+- **Test Cases (80 points)**: Your program must produce correct output for all test cases
+- **Code Quality (5 points)**: Basic style and safety checks
+- **Late Penalty**: -20 points if submitted after deadline
 
 ## Getting Help
+- Test your code with the provided examples
+- Make sure your output format matches exactly (no extra text)
+- Check for common issues: missing semicolons, incorrect printf format
+- Ask questions during office hours
 
-1. **Check the assignment README** for examples and requirements
-2. **Look at the test results** in the Actions tab for specific errors
-3. **Ask questions** during office hours or on the course forum
-4. **Test locally** if you have a C compiler installed
-
-## Academic Integrity Reminder
-
+## Academic Integrity
 - Write your own code
-- Don't share your repository with other students
-- Don't copy from online sources
-- Collaboration on concepts is OK, but code must be your own
+- Do not share your solution with other students
+- You may discuss the problem approach but not share actual code
+- All submissions are automatically checked for similarity
 
-**Good luck with your assignment!**
+**Good luck!**
