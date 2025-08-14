@@ -1,0 +1,100 @@
+# .github/workflows/autograder.yml
+name: Assignment Autograder
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:  # Allow manual runs
+
+jobs:
+  autograder:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    
+    steps:
+    - name: Checkout student code
+      uses: actions/checkout@v4
+      
+    - name: Set up build environment
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential gcc make bc
+        
+    - name: Display submission info
+      run: |
+        echo "🎓 FIU Assignment Autograder"
+        echo "Student: ${{ github.actor }}"
+        echo "Repository: ${{ github.repository }}"
+        echo "Commit: ${{ github.sha }}"
+        echo "Time: $(date -u)"
+        
+    - name: Check submission deadline
+      run: |
+        # Set your assignment deadline here (UTC time)
+        # Format: YYYY-MM-DD HH:MM:SS
+        DEADLINE="2025-12-31 23:59:59"
+        CURRENT=$(date -u "+%Y-%m-%d %H:%M:%S")
+        
+        echo "Assignment deadline: $DEADLINE UTC"
+        echo "Current time: $CURRENT UTC"
+        
+        # Convert to timestamps for comparison
+        DEADLINE_TS=$(date -d "$DEADLINE UTC" +%s 2>/dev/null || echo "0")
+        CURRENT_TS=$(date -u +%s)
+        
+        if [[ $CURRENT_TS -gt $DEADLINE_TS ]] && [[ $DEADLINE_TS -gt 0 ]]; then
+          HOURS_LATE=$(( (CURRENT_TS - DEADLINE_TS) / 3600 ))
+          echo "⚠️ LATE SUBMISSION: $HOURS_LATE hours past deadline"
+          echo "Late penalty will be applied: -20 points"
+          echo "LATE_PENALTY=20" >> $GITHUB_ENV
+        else
+          echo "✅ Submission is on time"
+          echo "LATE_PENALTY=0" >> $GITHUB_ENV
+        fi
+        
+    - name: Make autograder executable
+      run: chmod +x autograder.sh
+      
+    - name: Run autograder
+      run: |
+        echo "Starting autograder..."
+        ./autograder.sh
+        
+    - name: Upload test results
+      uses: actions/upload-artifact@v4
+      if: always()  # Upload results even if tests fail
+      with:
+        name: test-results-${{ github.actor }}-${{ github.run_number }}
+        path: |
+          test_results/
+          *.log
+        retention-days: 30
+        
+    - name: Display results summary
+      if: always()
+      run: |
+        echo "## 📊 Autograder Results Summary" >> $GITHUB_STEP_SUMMARY
+        
+        if [[ -f "test_results/summary.txt" ]]; then
+          FINAL_SCORE=$(grep "FINAL_SCORE:" test_results/summary.txt | cut -d' ' -f2)
+          TOTAL_POSSIBLE=$(grep "TOTAL_POSSIBLE:" test_results/summary.txt | cut -d' ' -f2)
+          PERCENTAGE=$(grep "PERCENTAGE:" test_results/summary.txt | cut -d' ' -f2)
+          TESTS_PASSED=$(grep "TESTS_PASSED:" test_results/summary.txt | cut -d' ' -f2)
+          TOTAL_TESTS=$(grep "TOTAL_TESTS:" test_results/summary.txt | cut -d' ' -f2)
+          LETTER_GRADE=$(grep "LETTER_GRADE:" test_results/summary.txt | cut -d' ' -f2)
+          
+          echo "**Final Score:** $FINAL_SCORE/$TOTAL_POSSIBLE ($PERCENTAGE%)" >> $GITHUB_STEP_SUMMARY
+          echo "**Letter Grade:** $LETTER_GRADE" >> $GITHUB_STEP_SUMMARY
+          echo "**Tests Passed:** $TESTS_PASSED/$TOTAL_TESTS" >> $GITHUB_STEP_SUMMARY
+          
+          if [[ $PERCENTAGE -ge 70 ]]; then
+            echo "**Status:** ✅ PASSING" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "**Status:** ❌ NEEDS IMPROVEMENT" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "💡 **Tip:** You can submit multiple times before the deadline to improve your grade!" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "❌ Could not generate results summary" >> $GITHUB_STEP_SUMMARY
+        fi
