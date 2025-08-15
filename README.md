@@ -11,9 +11,9 @@ Your program should:
 3. Handle the operations correctly for all integer inputs
 
 ## Requirements
-- Use standard C (C99 or later)
-- Read input using `scanf()`
-- Output results using `printf()`
+- Use these GCC compiler flags:  `gcc -std=c17 -Wall -Wextra -Werror -pedantic -g -O0`
+- Read input using: `scanf()`
+- Output results using: `printf()`
 - Handle both positive and negative integers
 - Follow good programming practices
 
