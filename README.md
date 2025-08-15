@@ -1,4 +1,5 @@
-# Assignment 1: Basic Input/Output Operations
+😺 GitHub Classroom Setup Practice
+This assignment is designed to get you familiar with GitHub Classroom assignment submission and grading. Please refer to the instructor-provided document "GUIDE – How to Submit an Assignment on GitHub" and the video tutorial links on the Canvas course page to understand the steps in detail. Please note that this is not a graded assignment.
 
 ## Objective
 Write a C program that reads two integers and performs basic arithmetic operations.
