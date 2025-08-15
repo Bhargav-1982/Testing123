@@ -89,4 +89,4 @@ Three lines containing:
 - You may discuss the problem approach but not share actual code
 - All submissions are automatically checked for similarity
 
-**Good luck!**
+👍 **Good luck!**
