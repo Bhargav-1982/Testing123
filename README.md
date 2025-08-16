@@ -31,41 +31,49 @@ Three lines containing:
 ### Example 1
 **Input:**
 ```
-5 3
+12.5
+10.3
 ```
 **Output:**
 ```
-8
-2
-15
+Addition Result = 22.799999
+Subtraction Result = 2.200000
+Multiplication Result = 128.750000
+Division Result = 1.213592
+Successful execution. Exiting program...
 ```
 
 ### Example 2
 **Input:**
 ```
--10 7
+12.5
+-10.3
 ```
 **Output:**
 ```
--3
--17
--70
+Addition Result = 2.200000
+Subtraction Result = 22.799999
+Multiplication Result = -128.750000
+Division Result = -1.213592
+Successful execution. Exiting program...
 ```
 
 ### Example 3
 **Input:**
 ```
-0 100
+12.5
+0
 ```
 **Output:**
 ```
-100
--100
-0
+Addition Result = 12.500000
+Subtraction Result = 12.500000
+Multiplication Result = 0.000000
+ERROR: divisio-by-zero. Aborting...
 ```
 
 ## Submission Instructions
-1. Edit the file `student_solution.c` with your implementation
+1. Edit the file `skeleton_code.c` with your implementation
 2. Test your code locally if possible
 3. Commit and push your changes to submit
 4. Check the "Actions" tab to see your autograder results
