@@ -1,28 +1,40 @@
 #include <stdio.h>
+#include <stdlib.h>
 
 /*
- * Assignment: Hands-On GitHub: Your First Assignment
- * Task: Refer to the README file and follow the instructions carefully.
+ * Assignment: Basic Calculator Operations
+ * Task: Refer to the README file and follow these instructions carefully.
  *
  * Instructions:
- * - Declare variables for two integers
- * - Read input from the user
- * - Calculate sum, difference, and product
- * - Print each result on a separate line
+ * - Declare variables for two floating-point numbers
+ * - Prompt user for input and read two numbers
+ * - Calculate addition, subtraction, multiplication, and division
+ * - Handle division by zero error appropriately
+ * - Print each result with appropriate labels
+ * - Use proper exit codes for success/failure
  */
 
 int main() {
-    // TODO: Declare your variables here
+    // TODO: Declare variables for two floating-point numbers
     
+    // TODO: Prompt user to enter two numbers
     
-    // TODO: Read two integers from input
+    // TODO: Read the two numbers from user input
     
+    // TODO: Calculate and display addition result
     
-    // TODO: Calculate sum, difference, and product
+    // TODO: Calculate and display subtraction result
     
+    // TODO: Calculate and display multiplication result
     
-    // TODO: Output the results in the specified format (one result per line)
+    // TODO: Check for division by zero
+    // If num2 is zero:
+    //   - Print error message about division by zero
+    //   - Return EXIT_FAILURE
+    // Otherwise:
+    //   - Calculate and display division result
     
+    // TODO: Print success message
     
-    return 0;
+    return EXIT_SUCCESS;
 }
