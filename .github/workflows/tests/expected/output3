@@ -1,3 +1,4 @@
-100
--100
-0
+Addition Result = 12.500000
+Subtraction Result = 12.500000
+Multiplication Result = 0.000000
+ERROR: divisio-by-zero. Aborting...
