@@ -6,7 +6,7 @@ LDFLAGS =
 
 # ============================================================================
 # Project settings - Student Grade Management System
-TARGET = calc
+TARGET = run
 SOURCES = $(wildcard *.c)
 HEADERS = $(wildcard *.h)
 # ============================================================================

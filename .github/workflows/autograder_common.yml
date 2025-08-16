@@ -1,100 +1,243 @@
-# .github/workflows/autograder.yml
-name: Assignment Autograder
+#!/bin/bash
+# Simple Autograder for C Programming Assignments
+# Edit the variables below for each new assignment
 
-on:
-  push:
-    branches: [ main ]
-  workflow_dispatch:  # Allow manual runs
+# =============================================================================
+# ASSIGNMENT SETTINGS (Edit these 5 lines for each assignment)
+# =============================================================================
+ASSIGNMENT_NAME="Basic Calculator"
+TOTAL_POINTS=100
+COMPILATION_POINTS=20
+TEST_POINTS=80
+TIMEOUT_SECONDS=10
 
-jobs:
-  autograder:
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
+# Due date (Florida time) - Format: "YYYY-MM-DD HH:MM:SS"
+# Note: GitHub Classroom will enforce the deadline - no late submissions accepted
+DUE_DATE="2025-12-31 23:59:59"
+
+# =============================================================================
+# FILE SETTINGS (Keep these the same for all assignments)
+# =============================================================================
+STUDENT_FILE="student_submission.c"
+EXECUTABLE_NAME="run"
+
+# =============================================================================
+# COLORS FOR OUTPUT
+# =============================================================================
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+
+# =============================================================================
+# INITIALIZE SCORES
+# =============================================================================
+COMPILATION_SCORE=0
+TEST_SCORE=0
+TOTAL_TESTS=0
+PASSED_TESTS=0
+
+# =============================================================================
+# UTILITY FUNCTIONS
+# =============================================================================
+print_success() {
+    echo -e "${GREEN}✅ $1${NC}"
+}
+
+print_error() {
+    echo -e "${RED}❌ $1${NC}"
+}
+
+print_warning() {
+    echo -e "${YELLOW}⚠️ $1${NC}"
+}
+
+print_info() {
+    echo -e "${BLUE}ℹ️ $1${NC}"
+}
+
+# =============================================================================
+# MAIN GRADING STARTS HERE
+# =============================================================================
+echo "🎓 Assignment: $ASSIGNMENT_NAME"
+echo "📅 Student: ${GITHUB_ACTOR:-Unknown}"
+echo "⏰ Submission: $(TZ='America/New_York' date '+%Y-%m-%d %H:%M:%S %Z')"
+echo
+
+# Create results directory
+mkdir -p results
+
+# Check submission time (for information only)
+echo "⏰ Submission: $(TZ='America/New_York' date '+%Y-%m-%d %H:%M:%S %Z')"
+echo "📅 Due date: $DUE_DATE EST/EDT"
+
+# =============================================================================
+# STEP 1: CHECK IF STUDENT FILE EXISTS
+# =============================================================================
+echo
+echo "📂 Checking files..."
+
+if [[ ! -f "$STUDENT_FILE" ]]; then
+    print_error "$STUDENT_FILE not found!"
+    echo "Make sure your code is in a file named exactly: $STUDENT_FILE"
+    exit 1
+fi
+
+print_success "Found $STUDENT_FILE"
+
+# =============================================================================
+# STEP 2: COMPILE THE CODE
+# =============================================================================
+echo
+echo "🔨 Compiling your code..."
+
+# Try to compile
+if gcc -std=c17 -Wall -Wextra -Werror -pedantic -g -O0 "$STUDENT_FILE" -o "$EXECUTABLE_NAME" 2> results/compile_errors.txt; then
+    print_success "Code compiled successfully!"
+    COMPILATION_SCORE=$COMPILATION_POINTS
+else
+    print_error "Code failed to compile"
+    echo
+    echo "Compilation errors:"
+    cat results/compile_errors.txt | head -10
+    echo
+    echo "💡 Tips:"
+    echo "  - Check for missing semicolons"
+    echo "  - Make sure all { have matching }"
+    echo "  - Check variable names for typos"
+    echo "  - Make sure you included the right headers"
     
-    steps:
-    - name: Checkout student code
-      uses: actions/checkout@v4
-      
-    - name: Set up build environment
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y build-essential gcc make bc
-        
-    - name: Display submission info
-      run: |
-        echo "🎓 FIU Assignment Autograder"
-        echo "Student: ${{ github.actor }}"
-        echo "Repository: ${{ github.repository }}"
-        echo "Commit: ${{ github.sha }}"
-        echo "Time: $(date -u)"
-        
-    - name: Check submission deadline
-      run: |
-        # Set your assignment deadline here (UTC time)
-        # Format: YYYY-MM-DD HH:MM:SS
-        DEADLINE="2025-12-31 23:59:59"
-        CURRENT=$(date -u "+%Y-%m-%d %H:%M:%S")
-        
-        echo "Assignment deadline: $DEADLINE UTC"
-        echo "Current time: $CURRENT UTC"
-        
-        # Convert to timestamps for comparison
-        DEADLINE_TS=$(date -d "$DEADLINE UTC" +%s 2>/dev/null || echo "0")
-        CURRENT_TS=$(date -u +%s)
-        
-        if [[ $CURRENT_TS -gt $DEADLINE_TS ]] && [[ $DEADLINE_TS -gt 0 ]]; then
-          HOURS_LATE=$(( (CURRENT_TS - DEADLINE_TS) / 3600 ))
-          echo "⚠️ LATE SUBMISSION: $HOURS_LATE hours past deadline"
-          echo "Late penalty will be applied: -20 points"
-          echo "LATE_PENALTY=20" >> $GITHUB_ENV
+    COMPILATION_SCORE=0
+    # Create final summary and exit
+    FINAL_SCORE=$COMPILATION_SCORE
+    
+    echo
+    echo "📊 FINAL GRADE: $FINAL_SCORE/$TOTAL_POINTS (Code must compile to get test points)"
+    exit 1
+fi
+
+# =============================================================================
+# STEP 3: RUN TEST CASES
+# =============================================================================
+echo
+echo "🧪 Running test cases..."
+
+# Find all test input files
+TEST_INPUTS=(tests/input*.txt)
+
+# Check if any test files exist
+if [[ ! -f "${TEST_INPUTS[0]}" ]]; then
+    print_error "No test files found!"
+    echo "Instructor: Please add test files in tests/ directory"
+    exit 1
+fi
+
+TOTAL_TESTS=${#TEST_INPUTS[@]}
+echo "Found $TOTAL_TESTS test case(s)"
+echo
+
+# Run each test
+for input_file in "${TEST_INPUTS[@]}"; do
+    # Get test number (input1.txt -> 1)
+    test_num=$(basename "$input_file" .txt | sed 's/input//')
+    expected_file="tests/output${test_num}.txt"
+    
+    echo "🔍 Test $test_num:"
+    
+    # Check if expected output file exists
+    if [[ ! -f "$expected_file" ]]; then
+        print_warning "Expected output file missing: $expected_file"
+        continue
+    fi
+    
+    # Show what input we're testing with
+    echo "   Input:"
+    head -3 "$input_file" | sed 's/^/     /'
+    if [[ $(wc -l < "$input_file") -gt 3 ]]; then
+        echo "     ..."
+    fi
+    
+    # Run the student's program with timeout
+    student_output="results/student_output_${test_num}.txt"
+    
+    if timeout "$TIMEOUT_SECONDS" ./"$EXECUTABLE_NAME" < "$input_file" > "$student_output" 2>/dev/null; then
+        # Compare outputs (ignore extra whitespace)
+        if diff -w -B "$expected_file" "$student_output" > "results/diff_${test_num}.txt" 2>&1; then
+            print_success "Test $test_num PASSED"
+            ((PASSED_TESTS++))
         else
-          echo "✅ Submission is on time"
-          echo "LATE_PENALTY=0" >> $GITHUB_ENV
+            print_error "Test $test_num FAILED"
+            echo "   Expected:"
+            head -3 "$expected_file" | sed 's/^/     /'
+            echo "   You got:"
+            head -3 "$student_output" | sed 's/^/     /'
+            echo "   💡 Check your calculation or output format"
         fi
-        
-    - name: Make autograder executable
-      run: chmod +x autograder.sh
-      
-    - name: Run autograder
-      run: |
-        echo "Starting autograder..."
-        ./autograder.sh
-        
-    - name: Upload test results
-      uses: actions/upload-artifact@v4
-      if: always()  # Upload results even if tests fail
-      with:
-        name: test-results-${{ github.actor }}-${{ github.run_number }}
-        path: |
-          test_results/
-          *.log
-        retention-days: 30
-        
-    - name: Display results summary
-      if: always()
-      run: |
-        echo "## 📊 Autograder Results Summary" >> $GITHUB_STEP_SUMMARY
-        
-        if [[ -f "test_results/summary.txt" ]]; then
-          FINAL_SCORE=$(grep "FINAL_SCORE:" test_results/summary.txt | cut -d' ' -f2)
-          TOTAL_POSSIBLE=$(grep "TOTAL_POSSIBLE:" test_results/summary.txt | cut -d' ' -f2)
-          PERCENTAGE=$(grep "PERCENTAGE:" test_results/summary.txt | cut -d' ' -f2)
-          TESTS_PASSED=$(grep "TESTS_PASSED:" test_results/summary.txt | cut -d' ' -f2)
-          TOTAL_TESTS=$(grep "TOTAL_TESTS:" test_results/summary.txt | cut -d' ' -f2)
-          LETTER_GRADE=$(grep "LETTER_GRADE:" test_results/summary.txt | cut -d' ' -f2)
-          
-          echo "**Final Score:** $FINAL_SCORE/$TOTAL_POSSIBLE ($PERCENTAGE%)" >> $GITHUB_STEP_SUMMARY
-          echo "**Letter Grade:** $LETTER_GRADE" >> $GITHUB_STEP_SUMMARY
-          echo "**Tests Passed:** $TESTS_PASSED/$TOTAL_TESTS" >> $GITHUB_STEP_SUMMARY
-          
-          if [[ $PERCENTAGE -ge 70 ]]; then
-            echo "**Status:** ✅ PASSING" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "**Status:** ❌ NEEDS IMPROVEMENT" >> $GITHUB_STEP_SUMMARY
-          fi
-          
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "💡 **Tip:** You can submit multiple times before the deadline to improve your grade!" >> $GITHUB_STEP_SUMMARY
-        else
-          echo "❌ Could not generate results summary" >> $GITHUB_STEP_SUMMARY
-        fi
+    else
+        print_error "Test $test_num FAILED (timeout or crash)"
+        echo "   💡 Your program took too long or crashed"
+    fi
+    echo
+done
+
+# =============================================================================
+# STEP 4: CALCULATE FINAL GRADE
+# =============================================================================
+
+# Calculate test score
+if [[ $TOTAL_TESTS -gt 0 ]]; then
+    TEST_SCORE=$((PASSED_TESTS * TEST_POINTS / TOTAL_TESTS))
+fi
+
+# Calculate final score
+FINAL_SCORE=$((COMPILATION_SCORE + TEST_SCORE))
+
+PERCENTAGE=$((FINAL_SCORE * 100 / TOTAL_POINTS))
+
+# =============================================================================
+# STEP 5: DISPLAY RESULTS
+# =============================================================================
+
+echo "📊 GRADE SUMMARY"
+echo "=========================="
+echo "Compilation:     $COMPILATION_SCORE/$COMPILATION_POINTS points"
+echo "Tests Passed:    $PASSED_TESTS/$TOTAL_TESTS ($TEST_SCORE/$TEST_POINTS points)"
+echo "=========================="
+echo "FINAL GRADE:     $FINAL_SCORE/$TOTAL_POINTS ($PERCENTAGE%)"
+
+if [[ $PERCENTAGE -ge 90 ]]; then
+    echo "🎉 Excellent work!"
+elif [[ $PERCENTAGE -ge 80 ]]; then
+    echo "👍 Great job!"
+elif [[ $PERCENTAGE -ge 70 ]]; then
+    echo "✅ Good work!"
+elif [[ $PERCENTAGE -ge 60 ]]; then
+    echo "📚 Getting there - keep practicing!"
+else
+    echo "💪 Don't give up - review the feedback and try again!"
+fi
+
+echo
+echo "💡 Remember: You can resubmit as many times as you want before the deadline!"
+
+# =============================================================================
+# SAVE RESULTS FOR GITHUB
+# =============================================================================
+
+# Create machine-readable summary
+cat > results/summary.txt << EOF
+ASSIGNMENT: $ASSIGNMENT_NAME
+STUDENT: ${GITHUB_ACTOR:-Unknown}
+FINAL_SCORE: $FINAL_SCORE
+TOTAL_POINTS: $TOTAL_POINTS
+PERCENTAGE: $PERCENTAGE
+COMPILATION_SCORE: $COMPILATION_SCORE
+TEST_SCORE: $TEST_SCORE
+TESTS_PASSED: $PASSED_TESTS
+TOTAL_TESTS: $TOTAL_TESTS
+TIMESTAMP: $(date)
+EOF
+
+# Exit successfully (GitHub Actions will show green checkmark)
+exit 0
