@@ -1,12 +1,14 @@
 #include <stdio.h>
 
 /*
- * Assignment 1: Basic Input/Output Operations
- * 
+ * Assignment: Hands-On GitHub: Your First Assignment
+ * Task: Refer to the README file and follow the instructions carefully.
+ *
  * Instructions:
- * 1. Read two integers from standard input
- * 2. Calculate and output their sum, difference, and product
- * 3. Make sure your output format matches the examples exactly
+ * - Declare variables for two integers
+ * - Read input from the user
+ * - Calculate sum, difference, and product
+ * - Print each result on a separate line
  */
 
 int main() {
@@ -19,7 +21,7 @@ int main() {
     // TODO: Calculate sum, difference, and product
     
     
-    // TODO: Output the results (one per line)
+    // TODO: Output the results in the specified format (one result per line)
     
     
     return 0;
