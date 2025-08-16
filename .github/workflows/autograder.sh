@@ -1,13 +1,12 @@
 #!/bin/bash
 # autograder.sh - Simple but comprehensive autograder for C assignments
-
+#DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD
 set -e  # Exit on any error
 
 # Configuration
 TIMEOUT_SECONDS=5
-COMPILATION_POINTS=15
+COMPILATION_POINTS=20
 TEST_POINTS=80
-STYLE_POINTS=5
 TOTAL_POINTS=100
 
 # Colors for output
@@ -20,12 +19,11 @@ NC='\033[0m'
 # Initialize scores
 COMPILATION_SCORE=0
 TEST_SCORE=0
-STYLE_SCORE=0
 TOTAL_TESTS=0
 PASSED_TESTS=0
 
 echo -e "${BLUE}========================================${NC}"
-echo -e "${BLUE}    C Programming Assignment Autograder${NC}"
+echo -e "${BLUE}Hands On GitHub: Your first assignment${NC}"
 echo -e "${BLUE}========================================${NC}"
 echo "Student: $GITHUB_ACTOR"
 echo "Repository: $GITHUB_REPOSITORY"
@@ -33,11 +31,11 @@ echo "Submission time: $(date)"
 echo
 
 # Create results directory
-mkdir -p test_results
+mkdir -p AUTOGRADER_TEST_RESULTS
 
 # Function to log results
 log_result() {
-    echo "$1" | tee -a test_results/detailed_log.txt
+    echo "$1" | tee -a AUTOGRADER_TEST_RESULTS/detailed_log.txt
 }
 
 # Step 1: Check required files
@@ -58,81 +56,27 @@ fi
 echo -e "${GREEN}✅ All required files found${NC}"
 log_result "✅ Required files check: PASSED"
 
-# Step 2: Basic code quality check
-echo -e "${BLUE}=== Step 2: Code Quality Check ===${NC}"
-
-# Check file size (reasonable limits)
-FILE_SIZE=$(wc -c < student_solution.c)
-if [[ $FILE_SIZE -gt 10000 ]]; then
-    echo -e "${YELLOW}⚠️  Warning: Large file size (${FILE_SIZE} bytes)${NC}"
-elif [[ $FILE_SIZE -lt 50 ]]; then
-    echo -e "${YELLOW}⚠️  Warning: Very small file size (${FILE_SIZE} bytes)${NC}"
-else
-    echo -e "${GREEN}✅ File size looks reasonable (${FILE_SIZE} bytes)${NC}"
-fi
-
-# Check for basic required elements
-STYLE_ISSUES=0
-
-if ! grep -q "#include" student_solution.c; then
-    echo -e "${YELLOW}⚠️  Warning: No #include statements found${NC}"
-    ((STYLE_ISSUES++))
-fi
-
-if ! grep -q "int main" student_solution.c; then
-    echo -e "${RED}❌ Error: No main function found${NC}"
-    ((STYLE_ISSUES += 2))
-fi
-
-if ! grep -q "return" student_solution.c; then
-    echo -e "${YELLOW}⚠️  Warning: No return statement found${NC}"
-    ((STYLE_ISSUES++))
-fi
-
-# Check for dangerous functions
-if grep -q "gets\|strcpy\|strcat\|sprintf" student_solution.c; then
-    echo -e "${YELLOW}⚠️  Warning: Potentially unsafe functions detected${NC}"
-    ((STYLE_ISSUES++))
-fi
-
-# Calculate style score
-if [[ $STYLE_ISSUES -eq 0 ]]; then
-    STYLE_SCORE=$STYLE_POINTS
-    echo -e "${GREEN}✅ Code quality check passed${NC}"
-elif [[ $STYLE_ISSUES -le 2 ]]; then
-    STYLE_SCORE=$((STYLE_POINTS * 3 / 4))
-    echo -e "${YELLOW}⚠️  Minor code quality issues found${NC}"
-else
-    STYLE_SCORE=$((STYLE_POINTS / 2))
-    echo -e "${YELLOW}⚠️  Multiple code quality issues found${NC}"
-fi
-
-log_result "Code quality score: $STYLE_SCORE/$STYLE_POINTS (issues: $STYLE_ISSUES)"
-
-# Step 3: Compilation
-echo -e "${BLUE}=== Step 3: Compilation ===${NC}"
+# Step 2: Compilation
+echo -e "${BLUE}=== Step 2: Compilation ===${NC}"
 
 # Clean any previous builds
 if make clean >/dev/null 2>&1; then
     echo "Cleaned previous build files"
 fi
 
-# Try strict compilation first
-echo "Attempting compilation with strict settings..."
-if make > compilation_normal.log 2>&1; then
-    echo -e "${YELLOW}⚠️  Compilation successful with warnings${NC}"
-    COMPILATION_SCORE=$((COMPILATION_POINTS * 4 / 5))
-    COMPILER_MODE="normal"
-    echo "Compilation warnings:"
-    cat compilation_normal.log | head -n 10
+# Compilation
+echo "Attempting compilation..."
+if make > compilation.log 2>&1; then
+    echo -e "${YELLOW}☑️  Compilation successful...${NC}"
+    COMPILATION_SCORE=$((COMPILATION_POINTS * 4 / 5))      
 else
-    echo -e "${RED}❌ Compilation failed${NC}"
+    echo -e "${RED}❌ Compilation faile...d${NC}"
     echo "Compilation errors:"
-    cat compilation_normal.log
+    cat compilation.log
     COMPILATION_SCORE=0
     log_result "COMPILATION FAILED"
     log_result "Errors:"
-    cat compilation_normal.log >> test_results/detailed_log.txt
+    cat compilation.log >> AUTOGRADER_TEST_RESULTS/detailed_log.txt
     
     # Create summary and exit
     {
@@ -140,21 +84,21 @@ else
         echo "TOTAL_POSSIBLE: $TOTAL_POINTS"
         echo "COMPILATION: FAILED"
         echo "REASON: Compilation errors"
-    } > test_results/summary.txt
+    } > AUTOGRADER_TEST_RESULTS/summary.txt
     exit 1
 fi
 
 # Verify executable was created
-if [[ ! -f "program" ]]; then
-    echo -e "${RED}❌ ERROR: Executable 'program' not created${NC}"
+if [[ ! -f "calc" ]]; then
+    echo -e "${RED}❌ ERROR: Executable 'calc' not created${NC}"
     log_result "ERROR: No executable produced"
     exit 1
 fi
 
-log_result "Compilation: $COMPILATION_SCORE/$COMPILATION_POINTS ($COMPILER_MODE mode)"
+log_result "Compilation: $COMPILATION_SCORE/$COMPILATION_POINTS"
 
-# Step 4: Testing
-echo -e "${BLUE}=== Step 4: Running Test Cases ===${NC}"
+# Step 3: Testing
+echo -e "${BLUE}=== Step 3: Running Test Cases ===${NC}"
 
 # Check if tests directory exists
 if [[ ! -d "tests" ]]; then
@@ -201,11 +145,11 @@ for input_file in "${TEST_INPUTS[@]}"; do
     cat "$expected_file" | sed 's/^/  /'
     
     # Run the test
-    student_output="test_results/student_output_${test_num}.txt"
+    student_output="AUTOGRADER_TEST_RESULTS/student_output_${test_num}.txt"
     
     if timeout $TIMEOUT_SECONDS ./program < "$input_file" > "$student_output" 2>/dev/null; then
         # Compare outputs (ignore trailing whitespace)
-        if diff -w -B "$expected_file" "$student_output" > "test_results/diff_${test_num}.txt" 2>&1; then
+        if diff -w -B "$expected_file" "$student_output" > "AUTOGRADER_TEST_RESULTS/diff_${test_num}.txt" 2>&1; then
             echo -e "${GREEN}✅ Test $test_num: PASSED${NC}"
             log_result "Test $test_num: PASSED"
             ((PASSED_TESTS++))
@@ -214,7 +158,7 @@ for input_file in "${TEST_INPUTS[@]}"; do
             echo "Your output:"
             cat "$student_output" | sed 's/^/  /'
             echo "Difference:"
-            head -n 5 "test_results/diff_${test_num}.txt" | sed 's/^/  /'
+            head -n 5 "AUTOGRADER_TEST_RESULTS/diff_${test_num}.txt" | sed 's/^/  /'
             log_result "Test $test_num: FAILED (incorrect output)"
         fi
     else
@@ -296,7 +240,7 @@ echo -e "${GREEN}Letter Grade: $LETTER_GRADE${NC}"
     echo "STUDENT: $GITHUB_ACTOR"
     echo "REPOSITORY: $GITHUB_REPOSITORY"
     echo "COMMIT: $GITHUB_SHA"
-} > test_results/summary.txt
+} > AUTOGRADER_TEST_RESULTS/summary.txt
 
 log_result "=== FINAL SUMMARY ==="
 log_result "Score: $FINAL_SCORE/$TOTAL_POINTS ($PERCENTAGE%)"
@@ -304,8 +248,8 @@ log_result "Grade: $LETTER_GRADE"
 log_result "Tests passed: $PASSED_TESTS/$TOTAL_TESTS"
 
 echo
-echo "Detailed results saved to test_results/ directory"
-echo "Summary available in test_results/summary.txt"
+echo "Detailed results saved to AUTOGRADER_TEST_RESULTS/ directory"
+echo "Summary available in AUTOGRADER_TEST_RESULTS/summary.txt"
 
 # Exit with appropriate code for GitHub Actions
 if [[ $FINAL_SCORE -ge $((TOTAL_POINTS * 6 / 10)) ]]; then
