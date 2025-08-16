@@ -1,6 +1,5 @@
 #!/bin/bash
 # autograder.sh - Simple but comprehensive autograder for C assignments
-#DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD
 set -e  # Exit on any error
 
 # Configuration
