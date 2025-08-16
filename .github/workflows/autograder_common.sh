@@ -1,6 +1,5 @@
 #!/bin/bash
 # autograder.sh - Simple but comprehensive autograder for C assignments
-#DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD
 set -e  # Exit on any error
 
 # Configuration
@@ -108,7 +107,7 @@ if [[ ! -d "tests" ]]; then
 fi
 
 # Find all test cases
-TEST_INPUTS=(tests/testcases/input*.txt)
+TEST_INPUTS=(tests/Testcases/input*.txt)
 if [[ ${#TEST_INPUTS[@]} -eq 0 ]] || [[ ! -f "${TEST_INPUTS[0]}" ]]; then
     echo -e "${RED}❌ ERROR: No test cases found${NC}"
     log_result "ERROR: No test cases"
@@ -127,7 +126,7 @@ for input_file in "${TEST_INPUTS[@]}"; do
     # Extract test number
     test_name=$(basename "$input_file" .txt)
     test_num=${test_name#input}
-    expected_file="tests/expected/output${test_num}.txt"
+    expected_file="tests/Expected_Output/output${test_num}.txt"
     
     echo -e "${BLUE}--- Test $test_num ---${NC}"
     
@@ -147,7 +146,7 @@ for input_file in "${TEST_INPUTS[@]}"; do
     # Run the test
     student_output="AUTOGRADER_TEST_RESULTS/student_output_${test_num}.txt"
     
-    if timeout $TIMEOUT_SECONDS ./program < "$input_file" > "$student_output" 2>/dev/null; then
+    if timeout $TIMEOUT_SECONDS ./cal < "$input_file" > "$student_output" 2>/dev/null; then
         # Compare outputs (ignore trailing whitespace)
         if diff -w -B "$expected_file" "$student_output" > "AUTOGRADER_TEST_RESULTS/diff_${test_num}.txt" 2>&1; then
             echo -e "${GREEN}✅ Test $test_num: PASSED${NC}"
@@ -180,10 +179,6 @@ log_result "Testing: $TEST_SCORE/$TEST_POINTS ($PASSED_TESTS/$TOTAL_TESTS passed
 # Step 5: Calculate final score
 echo -e "${BLUE}=== Final Results ===${NC}"
 
-# Check for late penalty
-LATE_PENALTY=${LATE_PENALTY:-0}
-SUBTOTAL=$((COMPILATION_SCORE + TEST_SCORE + STYLE_SCORE))
-FINAL_SCORE=$((SUBTOTAL - LATE_PENALTY))
 
 if [[ $FINAL_SCORE -lt 0 ]]; then
     FINAL_SCORE=0
@@ -195,34 +190,14 @@ echo "│           GRADE BREAKDOWN           │"
 echo "├─────────────────────────────────────┤"
 printf "│ Compilation:      %3d/%3d points   │\n" $COMPILATION_SCORE $COMPILATION_POINTS
 printf "│ Test Cases:       %3d/%3d points   │\n" $TEST_SCORE $TEST_POINTS
-printf "│ Code Quality:     %3d/%3d points   │\n" $STYLE_SCORE $STYLE_POINTS
 echo "├─────────────────────────────────────┤"
 printf "│ Subtotal:         %3d/%3d points   │\n" $SUBTOTAL $TOTAL_POINTS
 
-if [[ $LATE_PENALTY -gt 0 ]]; then
-    printf "│ Late Penalty:     -%2d points       │\n" $LATE_PENALTY
-fi
 
 echo "├─────────────────────────────────────┤"
 printf "│ FINAL SCORE:      %3d/%3d points   │\n" $FINAL_SCORE $TOTAL_POINTS
 printf "│ PERCENTAGE:           %3d%%          │\n" $((FINAL_SCORE * 100 / TOTAL_POINTS))
 echo "└─────────────────────────────────────┘"
-
-# Determine letter grade (optional)
-PERCENTAGE=$((FINAL_SCORE * 100 / TOTAL_POINTS))
-if [[ $PERCENTAGE -ge 90 ]]; then
-    LETTER_GRADE="A"
-elif [[ $PERCENTAGE -ge 80 ]]; then
-    LETTER_GRADE="B"
-elif [[ $PERCENTAGE -ge 70 ]]; then
-    LETTER_GRADE="C"
-elif [[ $PERCENTAGE -ge 60 ]]; then
-    LETTER_GRADE="D"
-else
-    LETTER_GRADE="F"
-fi
-
-echo -e "${GREEN}Letter Grade: $LETTER_GRADE${NC}"
 
 # Create machine-readable summary
 {
